@@ -4,6 +4,7 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 // 引入其他页面
+import Login from '../pages/Login/Login' // 登录页
 import Home from '../pages/Home/Home' // 首页
 import Mine from '../pages/Mine/Mine' // 我的
 
@@ -14,8 +15,13 @@ export default new Router({
     // 首页(默认)
     {
       path: '/',
-      name: 'Home',
       component: Home
+    },
+    // 登录页
+    {
+      path: '/login',
+      name: 'Login',
+      component: Login
     },
     // 首页
     {
