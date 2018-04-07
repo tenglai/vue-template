@@ -5,6 +5,18 @@
     <x-header :left-options="{showBack: false}" title="首页"></x-header>
     <!-- 内容部分 -->
     <mSearch v-on:currentSearchTxt="getSearchTxt" :placeholder="placeholder"></mSearch>
+    <!-- 列表 -->
+    <div class="main_content">
+      <home-cell v-for="(item,index) in bookList" :key="item.id">
+        <span slot="title">{{item.title}}</span>
+        <span slot="price">{{item.price}}</span>
+      </home-cell>
+      <!-- 判断 -->
+      <div v-if="bookList.length!== 0">
+        <p class="load-more" v-show="!nomore" @click="loadMore">加载更多</p>
+        <p class="load-more" v-show="nomore">没有更多了</p>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -14,17 +26,22 @@
   import { homeData } from '../../http/getData'
   // 引入 输入框组件
   import mSearch from '../../components/Search'
+  // 引入 子组件
+  import HomeCell from '../../components/HomeCell'
 
   export default {
     components: {
       XHeader,
       mSearch,
+      HomeCell,
     },
     data () {
       return {
         placeholder: '请输入书籍名称', // 输入框提示语
         count: 20, // 数量
-        keywords: 'java' // 关键字
+        keywords: 'java', // 关键字
+        bookList: [], // 书籍数据
+        nomore: false
       }
     },
     mounted(){
@@ -34,16 +51,34 @@
     methods: {
       // 请求数据
       async initHome() {
+        // 参数
         let params = {
           count: this.count,
           keywords: this.keywords
         }
-
+        // 发起请求
         await homeData(params).then(res => {
-          console.log(res);
+          this.bookList = res.books;
         }).catch(err => {
           console.log(err)
         });
+      },
+      // 加载更多
+      loadMore(){
+        this.count = this.count + 20;
+        homeData({count: this.count, keywords: this.keywords}).then(res => {
+          this.bookList = res.books;
+          // if (res.books.length === 0) {
+          //   if (this.count !== 1) {
+          //     this.nomore = true
+          //   }
+          // } else {
+          //   this.bookList.push(...res.list)
+          //   if (res.books.length < 25) {
+          //     this.nomore = true
+          //   }
+          // }
+        })
       },
       // 获取输入框内容
       getSearchTxt(data){
@@ -55,5 +90,16 @@
 </script>
 
 <style lang="less" scoped>
-
+  .main_content{
+    position: absolute;
+    top: 91px;
+    left: 0px;
+    right: 0px;
+    bottom: 53px;
+    overflow: scroll;
+  }
+  /*隐藏 滚动条*/
+  ::-webkit-scrollbar{
+    display:none;
+  }
 </style>

@@ -1,8 +1,8 @@
 <!-- 组件 模板 -->
 <template>
-  <div>
-    <div></div>
-    <div></div>
+  <div class="cell">
+    <div class="title"><slot name="title"></slot></div>
+    <div class="price"><slot name="price"></slot></div>
   </div>
 </template>
 
@@ -58,5 +58,21 @@
 </script>
 
 <style lang="scss" scoped>
-  //
+  @import '../assets/css/app.scss';
+  .cell{
+    border-bottom: 1px solid #eee;
+    height: px2rem(100px);
+    div{
+      height: px2rem(50px);
+      line-height: px2rem(50px);
+      text-indent: 1em;
+      &.title{
+        @include font-dpr(16px);
+      }
+      &.price{
+        @include font-dpr(14px);
+        color: red;
+      }
+    }
+  }
 </style>

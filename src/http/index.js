@@ -28,20 +28,22 @@ export default ((url = '', data = {}) => {
           withCredentials: true
         })
         .then(function (response) {
-          if (response.data.code === 1010) {
-            console.log('没有权限')
-            router.push({ path: '/login' })
-          } else if (response.data.code == 200) {
-            /*20180120 修改返回值*/
-            // resolve(response.data.data)
-            if(response.data.data){
-              resolve(response.data.data)
-            }else{
-              resolve(response.data)
-            }
-          }else{
-            console.log(response.data);
-          }
+          // if (response.data.code === 1010) {
+          //   console.log('没有权限')
+          //   router.push({ path: '/login' })
+          // } else if (response.data.code == 200) {
+          //   /*20180120 修改返回值*/
+          //   // resolve(response.data.data)
+          //   if(response.data.data){
+          //     resolve(response.data.data)
+          //   }else{
+          //     resolve(response.data)
+          //   }
+          // }else{
+          //   console.log(response.data);
+          // }
+
+          resolve(response.data)
         })
         .catch(function (error) {
           console.log('进入错误处理')
