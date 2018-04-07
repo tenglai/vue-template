@@ -4,6 +4,7 @@
     <!-- 头部 -->
     <x-header :left-options="{showBack: false}" title="我的"></x-header>
     <!-- 内容部分 -->
+    <slider></slider>
     <!-- 图片懒加载-->
     <img class="item-pic" v-lazy="picUrl" />
   </div>
@@ -11,10 +12,13 @@
 
 <script>
   import { XHeader } from 'vux'
+  // 轮播图
+  import Slider from '../../components/Slider'
 
   export default {
     components: {
       XHeader,
+      Slider,
     },
     data () {
       return {
