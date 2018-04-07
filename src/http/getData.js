@@ -6,9 +6,10 @@ import {localStore} from  '../config/myUtils'
 
 /**
  * 获取首页数据
- * areasn 为参数
+ * params 为参数
  */
 
-export const homeData = (areasn) => $http.get('/index.json?act=index', {
-  areasn: areasn
+export const homeData = (params) => $http.get('book/search?', {
+  count: params.count,
+  q: params.keywords
 });

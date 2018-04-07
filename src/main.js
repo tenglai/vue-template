@@ -11,7 +11,7 @@ import './config/setView'
 import router from './router'
 // 引入vuex
 import store from './store'
-// 图片模板等懒加载
+/***图片模板等懒加载 start ***/
 import VueLazyload from 'vue-lazyload'
 // 404图片
 import errImg from './assets/img/404.png'
@@ -20,10 +20,10 @@ import loadingImg from './assets/img/loading-spin.svg'
 
 // 图片懒加载配置
 Vue.use(VueLazyload, {
-  preLoad: 1.3,
-  error: errImg,
-  loading: loadingImg,
-  attempt: 1,
+  preLoad: 1.3, // 预加载高度比例
+  error: errImg, // 图片路径错误时加载图片
+  loading: loadingImg, // 预加载图片
+  attempt: 1, // 尝试加载图片数量
   // set observer to true
   observer: true,
   // optional
@@ -32,6 +32,7 @@ Vue.use(VueLazyload, {
     threshold: 0.1
   }
 })
+/***图片模板等懒加载 end ***/
 
 FastClick.attach(document.body)
 
