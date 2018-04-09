@@ -9,13 +9,14 @@
       :placeholder="placeholder"
     ></mSearch>
     <!-- 滚动列表 -->
-    <scroller
+    <scroll
       class="wrapper"
       :data="bookList"
       :pulldown="pulldown"
       @pulldown="fetchData"
       :pullup="pullup"
       @pullup="loadMore"
+      :loadingStatus="loadingStatus"
       >
       <ul class="content">
         <!-- 内容(列表)部分 -->
@@ -25,7 +26,7 @@
         </home-cell>
       </ul>
       <div class="loading-wrapper"></div>
-    </scroller>
+    </scroll>
   </div>
 </template>
 
@@ -38,14 +39,14 @@
   // 引入 子组件
   import HomeCell from '../../components/HomeCell'
   // 引入下拉刷新组件
-  import Scroller from '../../components/Scroll'
+  import Scroll from '../../components/Scroll'
 
   export default {
     components: {
       XHeader,
       mSearch,
       HomeCell,
-      Scroller,
+      Scroll,
     },
     data () {
       return {
@@ -54,7 +55,11 @@
         keywords: 'java', // 关键字
         bookList: [], // 书籍数据
         pulldown: true, // 下拉刷新
-        pullup: true // 上拉加载更多
+        pullup: true, // 上拉加载更多
+        loadingStatus: { // 加载状态
+          showIcon: false,
+          status: ''
+        }
       }
     },
     mounted(){
@@ -86,15 +91,15 @@
       loadMore(){
         console.log('加载更多操作!');
         // 参数
-        // let params = {
-        //   count: this.count,
-        //   keywords: this.keywords
-        // }
-        // homeData(params).then(res => {
-        //   this.bookList = this.bookList.concat(res.books);
-        // }).catch(err => {
-        //   console.log(err)
-        // });
+        let params = {
+          count: this.count,
+          keywords: this.keywords
+        }
+        homeData(params).then(res => {
+          this.bookList = this.bookList.concat(res.books);
+        }).catch(err => {
+          console.log(err)
+        });
       }
     }
   }

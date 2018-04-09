@@ -3,13 +3,14 @@
   <div ref="wrapper" class="better-scroll-root">
     <!--该节点需要定位，内容以此节点的盒模型为基础滚动。另外，该节点的背景色配合上拉加载、下拉刷新的UI，正常情况下不可作它用。-->
     <div class="content-bg better-scroll-container">
-      <!--如果需要调滚动内容的背景色，则改该节点的背景色-->
+      <!-- 如果需要调滚动内容的背景色，则改该节点的背景色 -->
       <div>
-        <!--不太需要，待优化-->
+        <!-- 下拉刷新 -->
         <div v-if="pulldown" class="pulldown-tip">
           <i class="pull-icon indexicon icon-pull-down" :class="[pulldownTip.rotate]"></i>
           <span class="tip-content">{{pulldownTip.text}}</span>
         </div>
+        <!-- 加载状态 -->
         <div v-show="loadingStatus.showIcon || loadingStatus.status" class="loading-pos">
           <div v-show="loadingStatus.showIcon" class="loading-container">
             <div class="cube">
@@ -24,7 +25,16 @@
           <span class="loading-connecting">{{loadingStatus.status}}</span>
         </div>
       </div>
+      <!-- 内容(列表)部分 -->
       <slot></slot>
+      <!-- 如果需要调滚动内容的背景色，则改该节点的背景色 -->
+      <div>
+        <!-- 上拉加载更多 -->
+        <div v-if="pullup" class="pullup-tip">
+          <i class="pull-icon indexicon icon-pull-up" :class="[pullupTip.rotate]"></i>
+          <span class="tip-content">{{pullupTip.text}}</span>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -136,6 +146,10 @@
           text: '下拉刷新',     // 松开立即刷新
           rotate: ''    // icon-rotate
         },
+        pullupTip: {
+          text: '上拉加载更多',     // 松开立即加载
+          rotate: ''    // icon-rotate
+        },
       };
     },
     mounted() {
@@ -179,7 +193,18 @@
             }
 
             if (this.pullup) {
-              //
+              // 上拉动作
+              if (this.scroll.y <= (this.scroll.maxScrollY + 50)) {
+                this.pullupTip = {
+                  text: '加载中...',
+                  rotate: 'icon-rotate'
+                }
+              } else {
+                this.pullupTip = {
+                  text: '上拉加载更多',     // 松开立即刷新
+                  rotate: ''    // icon-rotate
+                }
+              }
             }
           })
         }
@@ -188,13 +213,20 @@
           this.scroll.on('scrollEnd', () => {
             // 滚动到底部
             if (this.scroll.y <= (this.scroll.maxScrollY + 50)) {
+              setTimeout(() => {
+                // 重置提示信息
+                this.pullupTip = {
+                  text: '上拉加载更多',     // 松开立即加载
+                  rotate: ''    // icon-rotate
+                }
+              },600);
               this.$emit('pullup')
             }
           })
         }
         // 是否派发顶部下拉事件，用于下拉刷新
         if (this.pulldown) {
-          this.scroll.on('touchend', (pos) => {
+          this.scroll.on('touchEnd', (pos) => {
             // 下拉动作
             if (pos.y > 50) {
               setTimeout(() => {
@@ -261,11 +293,27 @@
       text-align: center;
       z-index: 2000;
     }
+    .loading-pos, .pullup-tip {
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 100%;
+      height: 35px;
+      color: #fcfcfc;
+      text-align: center;
+      z-index: 2000;
+    }
     .loading-pos {
       background-color: rgba(7, 17, 27, 0.7);
     }
     .pulldown-tip {
       top: -50px;
+      height: 50px;
+      line-height: 50px;
+      z-index: 1;
+    }
+    .pullup-tip {
+      bottom: -50px;
       height: 50px;
       line-height: 50px;
       z-index: 1;
