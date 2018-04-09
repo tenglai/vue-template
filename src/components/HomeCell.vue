@@ -62,6 +62,7 @@
   .cell{
     border-bottom: 1px solid #eee;
     height: px2rem(100px);
+    background-color: #fff;
     div{
       height: px2rem(50px);
       line-height: px2rem(50px);

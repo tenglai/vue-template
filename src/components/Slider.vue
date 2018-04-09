@@ -1,14 +1,10 @@
-<!-- 轮播图 组件 -->
+<!-- 轮播图 组件一 -->
 <template>
-  <!--定义外层-->
-  <div class="wrapper" ref="wrapper">
-    <!--定义需要滚动的内容区域-->
-    <ul class="content" ref="sliderGroup">
-      <li v-for="(item,index) in items" :data-id="'item-'+(index)">
-        <img :src ="item" />
-      </li>
-    </ul>
-    <!--定义轮播图小圆点-->
+  <div class="slider" ref="slider">
+    <div class="slider-group" ref="sliderGroup">
+      <slot>
+      </slot>
+    </div>
     <div class="dots">
       <span class="dot" :class="{active: currentPageIndex === index }" v-for="(item, index) in dots"></span>
     </div>
@@ -16,169 +12,174 @@
 </template>
 
 <script>
-  import BScroll from 'better-scroll';
+  import { addClass } from '../assets/js/dom.js'
+  import BScroll from 'better-scroll'
 
-  export default {
-    data () {
+  export default{
+    data() {
       return {
-        items: [
-          require('../assets/img/01.jpg'),
-          require('../assets/img/02.jpg'),
-          require('../assets/img/03.jpg'),
-          require('../assets/img/04.jpg'),
-          require('../assets/img/05.jpg')
-        ],
-        loop:true, // 是否为循环播放
-        dots: [], // 存放轮播小圆点
-        currentPageIndex: 0, // 当前是哪个
-        autoPlay:true, // 是否自动轮播
-        interval:2000, // 设置自动轮播的时间
+        dots:[],
+        currentPageIndex: 0
       }
     },
-    created(){
-      //
+    props:{
+      loop:{
+        type:Boolean,
+        default:true
+      },
+      autoPlay:{
+        type:Boolean,
+        default:true
+      },
+      interval:{
+        type: Number,
+        default:4000
+      }
     },
     mounted() {
-      // 设置20ms的延迟
-      setTimeout(()=>{
-        this._setSliderWidth();
-        this._initDots();
-        this._initScroll();
-        // 设置自动轮播
+      this._setSliderWidth()
+      setTimeout(() => {
+        // 在初始化slider前初始化dot
+        this._initDots()
+        this._initSlider()
         if (this.autoPlay) {
-          this._play();
+          this._play()
         }
-      },20)
-      // 监听窗口改变重置高度
+      }, 20)
+      // 监听窗口大小改变时间
       window.addEventListener('resize', () => {
-        if (!this.scroll) {
-          return false;
+        if (!this.slider) {
+          return
         }
-        this._setSliderWidth(true);
-        this.scroll.refresh(); // 强制刷新
+        this._setSliderWidth(true)
+        this.slider.refresh()
       })
     },
-    activated() {
-      if (this.autoPlay) {
-        this._play()
-      }
-    },
-    deactivated() {
-      clearTimeout(this.timer)
-    },
-    beforeDestroy() {
-      clearTimeout(this.timer)
-    },
-    methods: {
-      // 定义一个计算宽度的方法
-      _setSliderWidth(isResize){
-        // 获取到多少子元素
-        this.children = this.$refs.sliderGroup.children;
-        let width = 0;
-        // 计算一个的宽度
-        let wrapperWidth = this.$refs.wrapper.clientWidth;
-        for(let i = 0;i<this.children.length;i++){
-          let child = this.children[i];
-          child.style.width = wrapperWidth + 'px';
-          width += wrapperWidth;
+    methods:{
+      _setSliderWidth(isResize) {
+        this.children = this.$refs.sliderGroup.children
+        let width = 0
+        // slider 可见宽度
+        let sliderWidth = this.$refs.slider.clientWidth
+        for (let i = 0; i < this.children.length; i++) {
+          let child = this.children[i]
+          // 设置每个子元素的样式及高度
+          addClass(child, 'slider-item')
+          child.style.width = sliderWidth + 'px'
+          // 计算总宽度
+          width += sliderWidth
         }
-        // 如果是循环播放的话
-        if(this.loop && !isResize){
-          width += 2 * wrapperWidth;
+        // 循环播放首尾各加一个,因此总宽度还要加两倍的宽度
+        if (this.loop && !isResize) {
+          width += 2 * sliderWidth
         }
-        this.$refs.sliderGroup.style.width = width + 'px';
+        this.$refs.sliderGroup.style.width = width + 'px'
       },
-      _initScroll() {
-        this.scroll = new BScroll(this.$refs.wrapper, {
+      _initSlider() {
+        this.slider = new BScroll(this.$refs.slider, {
           scrollX: true,
           scrollY: false,
           momentum: false,
-          snap: {
-            loop: this.loop, // ture表示前后增加一张
-            threshold: 0.3,
-            speed: 400
-          },
+          snap: true,
+          snapLoop: this.loop,
           snapThreshold: 0.3,
           snapSpeed: 400,
-          click: true
+          // click:true
         })
-        // 监听滚动结束后,小圆点+1
-        this.scroll.on('scrollEnd', () => {
-          let pageIndex = this.scroll.getCurrentPage().pageX;
+        // 监听滚动结束时间获取pageX
+        this.slider.on('scrollEnd', () => {
+          let pageIndex = this.slider.getCurrentPage().pageX
           if (this.loop) {
-            pageIndex -= 1;
+            // 由于bscroll循环播放首尾各加一个,因此索引-1
+            pageIndex -= 1
           }
-          this.currentPageIndex = pageIndex;
+          this.currentPageIndex = pageIndex
           if (this.autoPlay) {
-            this._play();
+            this._play()
           }
         })
-        // 手指滑动就停止自动轮播
-        this.scroll.on('beforeScrollStart', () => {
+        this.slider.on('beforeScrollStart', () => {
           if (this.autoPlay) {
-            clearTimeout(this.timer);
+            clearTimeout(this.timer)
           }
         })
       },
-      // 初始化添加小圆点
       _initDots() {
+        // 长度为n的空数组
         this.dots = new Array(this.children.length)
       },
-      // 设置自动轮播
       _play() {
-        let pageIndex = this.currentPageIndex + 1;
+        // currentPageIndex为不含首尾副本的索引，因此若有循环要+2
+        let pageIndex = this.currentPageIndex + 1
         if (this.loop) {
-          pageIndex += 1;
+          pageIndex += 1
         }
         this.timer = setTimeout(() => {
-          this.scroll.goToPage(pageIndex, 0, 400);
-        }, this.interval);
+          this.slider.goToPage(pageIndex, 0, 400)
+        }, this.interval)
       }
     },
-    // 组件销毁的时候清理定时器,仅仅是性能优化
-    destroyed(){
+    // 生命周期destroyed销毁清除定时器，有利于内存释放
+    destroyed() {
       clearTimeout(this.timer)
-    }
+    },
   }
 </script>
 
-<style lang="scss" scoped>
-  .wrapper{
-    position: relative;
-    width: 100%;
+<style scoped>
+  .slider{
     min-height: 1px;
+    position: relative;
+  }
+
+  .slider-group{
+    position: relative;
     overflow: hidden;
-    .content{
-      li{
-        list-style:none;
-        float:left;
-        box-sizing: border-box;
-        overflow: hidden;
-        text-align: center;
-        img{
-          display: block;
-          width: 100%;
-        }
-      }
-    }
-    .dots {
-      position: absolute;
-      right: 0;
-      left: 0;
-      bottom: 12px;
-      text-align: center;
-      font-size: 0;
-      .dot {
-        display: inline-block;
-        margin: 0 4px;
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background: #ddd;
-        &.active {
-          background: #333;
-        }
-      }
-    }
+    white-space: nowrap;
+  }
+
+  .slider-item{
+    float: left;
+    box-sizing: border-box;
+    overflow: hidden;
+    text-align: center;
+    height: 150px;
+    overflow: hidden;
+  }
+
+  .slider-item a{
+    display: block;
+    width: 100%;
+    overflow: hidden;
+    text-decoration: none;
+  }
+
+
+  .slider-item img{
+    display: block;
+    width: 100%;
+  }
+
+  .dots{
+    position: absolute;
+    right: 0;
+    left: 0;
+    bottom: 12px;
+    text-align: center;
+    font-size: 0;
+  }
+
+  .dot{
+    display: inline-block;
+    margin: 0 4px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: red;
+  }
+
+  .active{
+    width: 20px;
+    border-radius: 5px;
   }
 </style>

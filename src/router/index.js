@@ -38,7 +38,7 @@ export default new Router({
       path: '/home',
       name: 'Home',
       component: Home,
-      meta: { keepAlive: true }
+      // meta: { keepAlive: true }
     },
     // 我的
     {
