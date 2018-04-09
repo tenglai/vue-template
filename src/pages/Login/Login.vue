@@ -38,23 +38,23 @@
     methods:{
       /*找回密码*/
       findPassword() {
-        // this.$toast.center('找回密码暂时未开发');
+        this.$vux.toast.text('找回密码暂时未开发');
       },
       /*注册*/
       register() {
-        // this.$toast.center('注册暂时未开发');
+        this.$vux.toast.text('注册暂时未开发');
       },
       /*处理登录*/
       login() {
         if(!this.userNumber){
-          // this.$toast.center('请输入手机号');
+          this.$vux.toast.text('请输入手机号');
           return;
         }else if(!this.userPassword){
-          // this.$toast.center('请输入密码');
+          this.$vux.toast.text('请输入密码');
           return;
         }
         /*登录成功*/
-        // this.$toast.center('登录成功!');
+        this.$vux.toast.text('登录成功!');
         // 跳转home
         this.$router.push({path:'/'});
       }

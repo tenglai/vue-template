@@ -1,4 +1,4 @@
-<!-- 轮播图 组件一 -->
+<!-- 轮播图 (组件一) -->
 <template>
   <div class="slider" ref="slider">
     <div class="slider-group" ref="sliderGroup">
@@ -6,47 +6,44 @@
       </slot>
     </div>
     <div class="dots">
-      <span class="dot" :class="{active: currentPageIndex === index }" v-for="(item, index) in dots"></span>
+      <span class="dot" :class="{active: currentPageIndex === index}" v-for="(item, index) in dots" :key="index"></span>
     </div>
   </div>
 </template>
 
 <script>
-  import { addClass } from '../assets/js/dom.js'
   import BScroll from 'better-scroll'
-
+  import {addClass} from '../assets/js/dom.js'
   export default{
+    props: {
+      loop: {
+        type: Boolean,
+        default: true
+      },
+      autoPlay: {
+        type: Boolean,
+        default: true
+      },
+      interval: {
+        type: Number,
+        default: 4000
+      }
+    },
     data() {
       return {
-        dots:[],
+        dots: [],
         currentPageIndex: 0
       }
     },
-    props:{
-      loop:{
-        type:Boolean,
-        default:true
-      },
-      autoPlay:{
-        type:Boolean,
-        default:true
-      },
-      interval:{
-        type: Number,
-        default:4000
-      }
-    },
     mounted() {
-      this._setSliderWidth()
       setTimeout(() => {
-        // 在初始化slider前初始化dot
-        this._initDots()
+        this._setSliderWidth()
         this._initSlider()
+        this._initDots()
         if (this.autoPlay) {
           this._play()
         }
       }, 20)
-      // 监听窗口大小改变时间
       window.addEventListener('resize', () => {
         if (!this.slider) {
           return
@@ -55,21 +52,22 @@
         this.slider.refresh()
       })
     },
-    methods:{
+    methods: {
       _setSliderWidth(isResize) {
+        // 取轮播组的子元素
         this.children = this.$refs.sliderGroup.children
         let width = 0
-        // slider 可见宽度
+        // 取轮播组件宽度(即屏幕宽度)
         let sliderWidth = this.$refs.slider.clientWidth
-        for (let i = 0; i < this.children.length; i++) {
+        for (var i = 0; i < this.children.length; i++) {
           let child = this.children[i]
-          // 设置每个子元素的样式及高度
           addClass(child, 'slider-item')
+          // 设置轮播子图宽度为屏幕宽度
           child.style.width = sliderWidth + 'px'
-          // 计算总宽度
+          // 将轮播子图累加
           width += sliderWidth
         }
-        // 循环播放首尾各加一个,因此总宽度还要加两倍的宽度
+        // 增加2个slider宽度,为无缝滚动服务
         if (this.loop && !isResize) {
           width += 2 * sliderWidth
         }
@@ -79,107 +77,89 @@
         this.slider = new BScroll(this.$refs.slider, {
           scrollX: true,
           scrollY: false,
-          momentum: false,
-          snap: true,
-          snapLoop: this.loop,
-          snapThreshold: 0.3,
-          snapSpeed: 400,
-          // click:true
+          momentum: false, // 惯性
+          snap: {
+            loop: this.loop, // 循环
+            threshold: 0.3, // // 滚动距离超过宽度/高度的 30% 时切换图片
+            speed: 400 // 轮播间隔
+          },
+          click: true
         })
-        // 监听滚动结束时间获取pageX
         this.slider.on('scrollEnd', () => {
           let pageIndex = this.slider.getCurrentPage().pageX
-          if (this.loop) {
-            // 由于bscroll循环播放首尾各加一个,因此索引-1
-            pageIndex -= 1
-          }
+          // bs老版本有,新版本去掉
+          // if (this.loop) {
+          //   pageIndex -= 1
+          // }
           this.currentPageIndex = pageIndex
           if (this.autoPlay) {
-            this._play()
-          }
-        })
-        this.slider.on('beforeScrollStart', () => {
-          if (this.autoPlay) {
             clearTimeout(this.timer)
+            this._play()
           }
         })
       },
       _initDots() {
-        // 长度为n的空数组
-        this.dots = new Array(this.children.length)
+        // this.dots = new Array(this.children.length)
+        this.dots = new Array(this.children.length - 2)
       },
       _play() {
-        // currentPageIndex为不含首尾副本的索引，因此若有循环要+2
-        let pageIndex = this.currentPageIndex + 1
-        if (this.loop) {
-          pageIndex += 1
-        }
         this.timer = setTimeout(() => {
-          this.slider.goToPage(pageIndex, 0, 400)
+          this.slider.next(400)
         }, this.interval)
       }
     },
-    // 生命周期destroyed销毁清除定时器，有利于内存释放
+    // 什么时候会destroyed?
     destroyed() {
-      clearTimeout(this.timer)
-    },
+      console.log('destroyed --> 清理定时器')
+      clearTimeout(this.timer) // 有利于内存的释放
+    }
   }
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
   .slider{
     min-height: 1px;
     position: relative;
-  }
-
-  .slider-group{
-    position: relative;
-    overflow: hidden;
-    white-space: nowrap;
-  }
-
-  .slider-item{
-    float: left;
-    box-sizing: border-box;
-    overflow: hidden;
-    text-align: center;
-    height: 150px;
-    overflow: hidden;
-  }
-
-  .slider-item a{
-    display: block;
-    width: 100%;
-    overflow: hidden;
-    text-decoration: none;
-  }
-
-
-  .slider-item img{
-    display: block;
-    width: 100%;
-  }
-
-  .dots{
-    position: absolute;
-    right: 0;
-    left: 0;
-    bottom: 12px;
-    text-align: center;
-    font-size: 0;
-  }
-
-  .dot{
-    display: inline-block;
-    margin: 0 4px;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: red;
-  }
-
-  .active{
-    width: 20px;
-    border-radius: 5px;
+    .slider-group{
+      overflow: hidden;
+      white-space: nowrap;
+      .slider-item{
+        float: left;
+        box-sizing: border-box;
+        overflow: hidden;
+        text-align: center;
+        a{
+          display: block;
+          width: 100%;
+          overflow: hidden;
+          text-decoration: none;
+        }
+        img{
+          display: block;
+          width: 100%;
+        }
+      }
+    }
+    .dots{
+      position: absolute;
+      right: 0;
+      left: 0;
+      bottom: 12px;
+      text-align: center;
+      font-size: 0;
+      .dot{
+        display: inline-block;
+        margin: 0 4px;
+        width: 8px;
+        height: 8px;
+        border-radius: 4px;
+        background-color: rgba(255, 255, 255, 0.5);
+        &.active{
+          width: 20px;
+          border-radius: 5px;
+          background-color: rgba(255, 255, 255, 0.8);
+        }
+      }
+    }
   }
 </style>

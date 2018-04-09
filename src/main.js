@@ -34,6 +34,12 @@ Vue.use(VueLazyload, {
 })
 /***图片模板等懒加载 end ***/
 
+// 全局引入 loading/toast/alert
+import { LoadingPlugin, ToastPlugin, AlertPlugin } from 'vux'
+Vue.use(LoadingPlugin)
+Vue.use(ToastPlugin)
+Vue.use(AlertPlugin)
+
 FastClick.attach(document.body)
 
 Vue.config.productionTip = false
